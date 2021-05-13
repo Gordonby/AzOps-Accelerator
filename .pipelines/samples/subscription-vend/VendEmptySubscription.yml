@@ -3,7 +3,7 @@
 # Best run from the AzOps Pipeline UI
 # or integrated with your own process, using the DEVOPS AZ CLI to call the pipeline and pass the variables;  
 # az login --use-device-code
-# az pipelines run --org https://dev.azure.com/ORG -p PROJECT --name VendEmptySubscription --variables ManagementGroup=canary-sandboxes SubscriptionName=My-New-Sub Region=WestEurope Environment=canary
+# az pipelines run --org https://dev.azure.com/ORG -p PROJECT --name VendEmptySubscription --variables ManagementGroup=canary-sandboxes SubscriptionName=My-New-Sub Environment=canary
 
 trigger: none
 
@@ -36,7 +36,6 @@ jobs:
       echo "##vso[task.setvariable variable=Environment]Canary"
       echo "##vso[task.setvariable variable=ManagementGroup]Canary-Sandboxes"
       echo "##vso[task.setvariable variable=SubscriptionName]Testing-SubName"
-      echo "##vso[task.setvariable variable=Region]WestEurope"
     displayName: Set variables for testing
     condition: contains(variables['Build.SourceBranch'], 'platvendtestbranch')
    
@@ -59,8 +58,6 @@ jobs:
       echo "$(Environment) #The scope we're deploying at"
       echo "$(ManagementGroup) #The management group to hang the subscription from"
       echo "$(SubscriptionName) #The given name for the Subscription that is created"
-      echo "$(Region) #The Azure API region where the deployment will be sent to be executed"
-      echo "$(ExecuteVend) #This variable is what avoids running a WhatIf which is default behaviour"
     displayName: Inspect variables
 
   - task: Bash@3
