@@ -110,8 +110,8 @@ jobs:
 
           switch ( $AzOpsEnvironment.tolower() )
           {
-              "canary" { $repoBasePath+= "/azops/$AzOpsEnvironment ($AzOpsEnvironment)" }
-              "pdev" { $repoBasePath+= "/azops/$AzOpsEnvironment ($AzOpsEnvironment)" }
+              "canary" { $repoBasePath+= "/azops-canary/$AzOpsEnvironment ($AzOpsEnvironment)" }
+              "prod" { $repoBasePath+= "/azops-prod/$AzOpsEnvironment ($AzOpsEnvironment)" }
               default { Write-Error "Could not map $AzOpsEnvironment to a repo path" }
           }
 
