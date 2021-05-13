@@ -34,7 +34,7 @@ jobs:
       echo "##vso[task.setvariable variable=SubscriptionName]Testing-SubName"
       echo "##vso[task.setvariable variable=Region]WestEurope"
     displayName: Set variables for testing
-    condition: contains(variables['Build.SourceBranch'], 'testing')
+    condition: contains(variables['Build.SourceBranch'], 'platvendtestbranch')
    
   - task: PowerShell@2
     inputs:
