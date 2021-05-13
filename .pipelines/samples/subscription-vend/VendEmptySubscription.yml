@@ -1,5 +1,9 @@
 # Creates a PR for an empty Azure Subscription against a specific management group
-# Run with...  az pipelines run --org https://dev.azure.com/ORG -p PROJECT --name VendEmptySubscription --variables ManagementGroup=canary-sandboxes SubscriptionName=My-New-Sub Region=WestEurope Environment=canary
+
+# Best run from the AzOps Pipeline UI
+# or integrated with your own process, using the DEVOPS AZ CLI to call the pipeline and pass the variables;  
+# az login --use-device-code
+# az pipelines run --org https://dev.azure.com/ORG -p PROJECT --name VendEmptySubscription --variables ManagementGroup=canary-sandboxes SubscriptionName=My-New-Sub Region=WestEurope Environment=canary
 
 trigger: none
 
