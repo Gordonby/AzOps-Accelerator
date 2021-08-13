@@ -25,7 +25,10 @@ variables:
   
   - name: commit_message
     value: "Adding new subscription template"
-
+  
+  - name: create_workitem
+    value: "false"
+    
 jobs:
 - job: CreateSubscription
   steps:
@@ -36,6 +39,7 @@ jobs:
       echo "##vso[task.setvariable variable=Environment]Canary"
       echo "##vso[task.setvariable variable=ManagementGroup]Canary-Sandboxes"
       echo "##vso[task.setvariable variable=SubscriptionName]Testing-SubName"
+      #echo "##vso[task.setvariable variable=PrincipalId]"
     displayName: Set variables for testing
     condition: contains(variables['Build.SourceBranch'], 'platvendtestbranch')
    
@@ -58,6 +62,7 @@ jobs:
       echo "$(Environment) #The scope we're deploying at"
       echo "$(ManagementGroup) #The management group to hang the subscription from"
       echo "$(SubscriptionName) #The given name for the Subscription that is created"
+      echo "$(PrincipalId) #The principalId to use for RBAC assignment"
     displayName: Inspect variables
 
   - task: Bash@3
@@ -75,7 +80,7 @@ jobs:
       script: |
         branchName="$(workingbranch)"
         echo "Switcing to branch $branchName"
-        git switch -c $branchName
+        git switch -c $branchName origin/main
 
   - task: PowerShell@2
     inputs:
@@ -85,6 +90,7 @@ jobs:
           $AzOpsEnvironment="$(Environment)"
           $TargetMG="$(ManagementGroup)"
           $SubscriptionAlias="$(SubscriptionName)"
+          $PrincipalId="$(PrincipalId)"
 
           #Path specific vars
           $repoBasePath="$(System.DefaultWorkingDirectory)"
@@ -95,6 +101,7 @@ jobs:
           if(!$TargetMG) {Write-Error "ManagementGroup cannot be null"}
           if(!$SubscriptionAlias) {Write-Error "SubscriptionName cannot be null"}
           if(!$armTemplatePath) {Write-Error "ArmTemplateRepoPath cannot be null"}
+          if(!$PrincipalId) {Write-Error "PrincipalId cannot be null"}
 
           #Acquire Arm template
           $armTemplateJson = Get-Content $armTemplatePath -Raw
@@ -105,10 +112,9 @@ jobs:
           #However i prefer the reduced repo footprint from just working in 1 file. Your preference may be different
           $armTemplate.parameters.targetManagementGroup.defaultValue = $TargetMG
           $armTemplate.parameters.subscriptionAliasName.defaultValue = $SubscriptionAlias
+          $armTemplate.parameters.principalId.defaultValue = $PrincipalId
 
-          #Find the correct repo path to represent the management group scope
-          #$AzOpsEnvironment = $AzOpsEnvironment.ToLower()
-
+          #customise this switch statement to suit the top-level management groups used in your deployment
           switch ( $AzOpsEnvironment.tolower() )
           {
               "canary" { $repoBasePath+= "/azops-canary/$AzOpsEnvironment ($AzOpsEnvironment)" }
@@ -173,6 +179,15 @@ jobs:
             --query "pullRequestId" -o tsv)
 
         echo "PullRequest $PRID created"
+        
+        if("$(create_workitem)" -eq "true") {
+          echo "Creating work item"
+          TASKID=$(az boards work-item create --title "Vend Subscription $(SubscriptionName)" --type 'Task' --description "$(SubscriptionName)" --query "id" -o tsv)
+          echo "Task $TASKID created"
 
+          #TODO: Link to PR
+          az repos pr work-item add --id $PRID --work-items $TASKID
+        }
+        
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
